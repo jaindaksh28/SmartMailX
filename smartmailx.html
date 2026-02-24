@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartMailX — Simple, Secure, Smart Email</title>
+  <style>
+    /* ─── Design Tokens ─────────────────────────────────────── */
+    :root {
+      --navy:    #0b1f3a;
+      --blue:    #1a56db;
+      --sky:     #3b82f6;
+      --ice:     #e8f0fe;
+      --white:   #ffffff;
+      --gray-50: #f8fafc;
+      --gray-100:#f1f5f9;
+      --gray-300:#cbd5e1;
+      --gray-500:#64748b;
+      --gray-700:#334155;
+      --accent:  #0ea5e9;
+      --radius:  12px;
+      --shadow:  0 4px 24px rgba(11,31,58,.10);
+    }
+
+    /* ─── Reset & Base ──────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      color: var(--gray-700);
+      background: var(--white);
+      line-height: 1.7;
+    }
+    img { display: block; max-width: 100%; }
+    a { color: inherit; text-decoration: none; }
+
+    /* ─── Typography helpers ────────────────────────────────── */
+    .section-label {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: .75rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: .5rem;
+    }
+    h2 {
+      font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+    p { color: var(--gray-500); font-size: 1.05rem; }
+
+    /* ─── Layout ────────────────────────────────────────────── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+    section { padding: 6rem 0; }
+
+    /* ─── Navigation ────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2rem;
+      background: rgba(255,255,255,.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid transparent;
+      transition: border-color .3s, box-shadow .3s;
+    }
+    nav.scrolled {
+      border-color: var(--gray-300);
+      box-shadow: 0 2px 16px rgba(11,31,58,.07);
+    }
+    .nav-brand {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: -.01em;
+    }
+    .nav-brand span { color: var(--blue); }
+    .nav-links {
+      display: flex; gap: 2rem; list-style: none;
+    }
+    .nav-links a {
+      font-size: .9rem;
+      color: var(--gray-500);
+      transition: color .2s;
+      font-family: 'Courier New', Courier, monospace;
+      letter-spacing: .04em;
+    }
+    .nav-links a:hover { color: var(--blue); }
+    .nav-cta {
+      background: var(--blue);
+      color: var(--white) !important;
+      padding: .45rem 1.1rem;
+      border-radius: 999px;
+      transition: background .2s, transform .15s !important;
+    }
+    .nav-cta:hover { background: var(--navy) !important; transform: translateY(-1px); }
+
+    /* ─── Hamburger (mobile) ────────────────────────────────── */
+    .hamburger {
+      display: none; flex-direction: column; gap: 5px;
+      cursor: pointer; padding: .25rem;
+    }
+    .hamburger span {
+      display: block; width: 22px; height: 2px;
+      background: var(--navy);
+      transition: .3s;
+    }
+
+    /* ─── Hero ──────────────────────────────────────────────── */
+    #hero {
+      min-height: 100vh;
+      display: flex; align-items: center;
+      background: linear-gradient(135deg, var(--navy) 0%, #112d5e 60%, #1a3f7a 100%);
+      position: relative; overflow: hidden;
+      padding-top: 5rem;
+    }
+    /* Background geometric shapes */
+    #hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 75% 40%, rgba(59,130,246,.18) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 20% 80%, rgba(14,165,233,.12) 0%, transparent 60%);
+    }
+    .hero-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .hero-content { position: relative; z-index: 1; max-width: 700px; }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(59,130,246,.2);
+      border: 1px solid rgba(59,130,246,.4);
+      color: var(--accent);
+      font-family: 'Courier New', Courier, monospace;
+      font-size: .78rem;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      padding: .35rem .9rem;
+      border-radius: 999px;
+      margin-bottom: 1.5rem;
+    }
+    #hero h1 {
+      font-size: clamp(2.2rem, 5vw, 3.8rem);
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.1;
+      margin-bottom: 1rem;
+      letter-spacing: -.02em;
+    }
+    #hero h1 span { color: var(--accent); }
+    #hero .subtitle {
+      font-size: 1.2rem;
+      color: rgba(255,255,255,.65);
+      margin-bottom: 2.5rem;
+      font-style: italic;
+    }
+    .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: var(--blue);
+      color: var(--white);
+      padding: .85rem 1.8rem;
+      border-radius: 999px;
+      font-size: 1rem;
+      font-weight: 600;
+      border: 2px solid var(--blue);
+      cursor: pointer;
+      transition: background .2s, transform .15s, box-shadow .2s;
+      font-family: 'Courier New', Courier, monospace;
+      letter-spacing: .03em;
+    }
+    .btn-primary:hover {
+      background: var(--sky);
+      border-color: var(--sky);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(26,86,219,.35);
+    }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: transparent;
+      color: var(--white);
+      padding: .85rem 1.8rem;
+      border-radius: 999px;
+      font-size: 1rem;
+      border: 2px solid rgba(255,255,255,.3);
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      font-family: 'Courier New', Courier, monospace;
+      letter-spacing: .03em;
+    }
+    .btn-secondary:hover { border-color: var(--white); background: rgba(255,255,255,.07); }
+
+    /* Floating envelope decoration */
+    .hero-deco {
+      position: absolute; right: 5%; top: 50%; transform: translateY(-50%);
+      font-size: 14rem; opacity: .06;
+      animation: float 6s ease-in-out infinite;
+      line-height: 1;
+      pointer-events: none;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(-50%) rotate(-6deg); }
+      50%       { transform: translateY(-54%) rotate(-3deg); }
+    }
+
+    /* ─── Problem ───────────────────────────────────────────── */
+    #problem { background: var(--gray-50); }
+    .problems-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+    .problem-card {
+      background: var(--white);
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .problem-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow);
+    }
+    .problem-icon {
+      font-size: 2rem; margin-bottom: 1rem; display: block;
+    }
+    .problem-card h3 { font-size: 1rem; color: var(--navy); margin-bottom: .5rem; }
+    .problem-card p  { font-size: .9rem; }
+
+    /* ─── Solution ──────────────────────────────────────────── */
+    #solution { background: var(--white); }
+    .solution-inner {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+    }
+    .solution-visual {
+      background: linear-gradient(135deg, var(--navy), #1e3a6e);
+      border-radius: 20px;
+      aspect-ratio: 4/3;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .solution-visual::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 70% 70% at 50% 50%, rgba(59,130,246,.2) 0%, transparent 70%);
+    }
+    .mail-mockup {
+      position: relative; z-index: 1; text-align: center;
+    }
+    .mail-mockup .envelope { font-size: 5rem; animation: float 5s ease-in-out infinite; }
+    .badge {
+      display: inline-block;
+      background: var(--blue);
+      color: var(--white);
+      font-size: .75rem;
+      font-family: 'Courier New', Courier, monospace;
+      padding: .25rem .7rem;
+      border-radius: 999px;
+      margin-top: .75rem;
+    }
+    .solution-text h2 { margin-bottom: 1.25rem; }
+    .solution-text p  { font-size: 1.05rem; margin-bottom: 1.5rem; }
+    .solution-stats {
+      display: flex; gap: 2rem; margin-top: 2rem;
+    }
+    .stat { text-align: center; }
+    .stat .num {
+      font-size: 2rem; font-weight: 700; color: var(--blue);
+      font-family: 'Courier New', Courier, monospace;
+    }
+    .stat .label { font-size: .8rem; color: var(--gray-500); font-family: 'Courier New', Courier, monospace; }
+
+    /* ─── Features ──────────────────────────────────────────── */
+    #features { background: var(--ice); }
+    #features .section-header { text-align: center; margin-bottom: 3.5rem; }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 1.5rem;
+    }
+    .feature-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 2rem;
+      border: 1px solid rgba(26,86,219,.1);
+      transition: transform .25s, box-shadow .25s, border-color .25s;
+      position: relative; overflow: hidden;
+    }
+    .feature-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--blue), var(--accent));
+      transform: scaleX(0); transform-origin: left;
+      transition: transform .3s;
+    }
+    .feature-card:hover { transform: translateY(-6px); box-shadow: 0 12px 32px rgba(26,86,219,.12); border-color: var(--blue); }
+    .feature-card:hover::before { transform: scaleX(1); }
+    .feature-icon { font-size: 2.2rem; margin-bottom: 1rem; }
+    .feature-card h3 { font-size: 1.05rem; color: var(--navy); margin-bottom: .5rem; }
+    .feature-card p  { font-size: .9rem; }
+
+    /* ─── Security ──────────────────────────────────────────── */
+    #security { background: var(--navy); }
+    #security .section-label { color: var(--accent); }
+    #security h2 { color: var(--white); }
+    #security .section-header { margin-bottom: 3rem; }
+    .security-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem;
+    }
+    .security-card {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      transition: background .25s, transform .2s;
+    }
+    .security-card:hover {
+      background: rgba(59,130,246,.12);
+      transform: translateY(-4px);
+    }
+    .security-card .sec-icon { font-size: 1.8rem; margin-bottom: .75rem; }
+    .security-card h3 { font-size: 1rem; color: var(--white); margin-bottom: .4rem; }
+    .security-card p  { color: rgba(255,255,255,.55); font-size: .88rem; }
+
+    /* ─── CTA ───────────────────────────────────────────────── */
+    #cta { background: var(--gray-50); text-align: center; }
+    .cta-box {
+      background: linear-gradient(135deg, var(--navy) 0%, #1a3f7a 100%);
+      border-radius: 24px;
+      padding: 5rem 2rem;
+      position: relative; overflow: hidden;
+    }
+    .cta-box::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 60% at 80% 20%, rgba(59,130,246,.25) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 20% 90%, rgba(14,165,233,.15) 0%, transparent 55%);
+    }
+    .cta-box h2 { color: var(--white); position: relative; margin-bottom: 1rem; }
+    .cta-box p  { color: rgba(255,255,255,.6); position: relative; margin-bottom: 2rem; font-size: 1.05rem; }
+    .cta-box .btn-primary { position: relative; font-size: 1.05rem; padding: 1rem 2.2rem; }
+
+    /* ─── Footer ────────────────────────────────────────────── */
+    footer {
+      background: var(--navy);
+      color: rgba(255,255,255,.45);
+      text-align: center;
+      padding: 1.5rem;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: .8rem;
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+    footer span { color: var(--accent); }
+
+    /* ─── Responsive ────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; flex-direction: column; gap: 1rem; }
+      .nav-links.open {
+        display: flex; position: fixed; top: 64px; left: 0; right: 0;
+        background: rgba(255,255,255,.97);
+        backdrop-filter: blur(12px);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--gray-300);
+      }
+      .hamburger { display: flex; }
+      .hero-deco { display: none; }
+      .solution-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+      .solution-visual { order: -1; }
+      .solution-stats { gap: 1.5rem; }
+      section { padding: 4rem 0; }
+    }
+
+    /* ─── Fade-in on scroll ─────────────────────────────────── */
+    .reveal {
+      opacity: 0; transform: translateY(28px);
+      transition: opacity .6s, transform .6s;
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+  </style>
+</head>
+<body>
+
+  <!-- ╔══════════════════════════════╗ -->
+  <!-- ║  NAVIGATION                 ║ -->
+  <!-- ╚══════════════════════════════╝ -->
+  <nav id="navbar">
+    <div class="nav-brand">Smart<span>Mail</span>X</div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#problem">Problem</a></li>
+      <li><a href="#solution">Solution</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#security">Security</a></li>
+      <li><a href="#cta" class="nav-cta">Get Started</a></li>
+    </ul>
+    <div class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+
+  <!-- ╔══════════════════════════════╗ -->
+  <!-- ║  HERO SECTION               ║ -->
+  <!-- ╚══════════════════════════════╝ -->
+  <section id="hero">
+    <div class="hero-grid"></div>
+    <div class="hero-deco">✉</div>
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-tag">✦ Reinventing Email in 2026</div>
+        <h1>SmartMail<span>X</span> —<br>Simple, Secure,<br>Smart Email.</h1>
+        <p class="subtitle">The future of stress-free email management.</p>
+        <div class="hero-btns">
+          <a href="#cta" class="btn-primary">✉ Get Started Free</a>
+          <a href="#features" class="btn-secondary">↓ See Features</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ╔══════════════════════════════╗ -->
+  <!-- ║  PROBLEM SECTION            ║ -->
+  <!-- ╚══════════════════════════════╝ -->
+  <section id="problem">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-label">▸ The Problem</p>
+        <h2>Why Gmail &amp; Outlook<br>Fall Short</h2>
+        <p>Traditional email clients were built for a simpler era. Today's reality is very different.</p>
+      </div>
+      <div class="problems-grid">
+        <div class="problem-card reveal">
+          <span class="problem-icon">📬</span>
+          <h3>Inbox Overload</h3>
+          <p>100+ daily emails cause stress and important messages get buried and missed.</p>
+        </div>
+        <div class="problem-card reveal">
+          <span class="problem-icon">🗂️</span>
+          <h3>Complex Interfaces</h3>
+          <p>Cluttered UI patterns hide critical emails behind noise and irrelevant promotions.</p>
+        </div>
+        <div class="problem-card reveal">
+          <span class="problem-icon">⏳</span>
+          <h3>Crashes Kill Productivity</h3>
+          <p>Outlook's instability and slowdowns interrupt focus during critical work sessions.</p>
+        </div>
+        <div class="problem-card reveal">
+          <span class="problem-icon">🔓</span>
+          <h3>Evolving Threats</h3>
+          <p>Phishing and malware attacks grow more sophisticated daily, outpacing legacy defenses.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ╔══════════════════════════════╗ -->
+  <!-- ║  SOLUTION SECTION           ║ -->
+  <!-- ╚══════════════════════════════╝ -->
+  <section id="solution">
+    <div class="container">
+      <div class="solution-inner">
+        <div class="solution-visual">
+          <div class="mail-mockup">
+            <div class="envelope">✉</div>
+            <div class="badge">✓ Priority Sorted</div>
+          </div>
+        </div>
+        <div class="solution-text reveal">
+          <p class="section-label">▸ The Solution</p>
+          <h2>Introducing SmartMailX</h2>
+          <p>Designed for simplicity and clarity. Fast, reliable, and built with modern technology to keep your email organized and stress-free.</p>
+          <p>One elegant interface. Zero distractions. Everything you need, nothing you don't.</p>
+          <div class="solution-stats">
+            <div class="stat"><div class="num">10×</div><div class="label">Faster</div></div>
+            <div class="stat"><div class="num">98%</div><div class="label">Threat Detection</div></div>
+            <div class="stat"><div class="num">0</div><div class="label">Tracking</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ╔══════════════════════════════╗ -->
+  <!-- ║  FEATURES SECTION           ║ -->
+  <!-- ╚══════════════════════════════╝ -->
+  <section id="features">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-label">▸ Features</p>
+        <h2>SmartMailX's Unique Benefits</h2>
+        <p>Everything reimagined — from how mail arrives to how it's stored.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card reveal">
+          <div class="feature-icon">⚡</div>
+          <h3>Automatic Priority Sorting</h3>
+          <p>AI learns your patterns and surfaces what matters most — before you even open the app.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">🚫</div>
+          <h3>One-Click Unsubscribe</h3>
+          <p>Instantly remove yourself from mailing lists. Reclaim your inbox in seconds, not hours.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">🕵️</div>
+          <h3>Privacy-First System</h3>
+          <p>No tracking pixels, no data profiling. Your inbox stays yours — completely and always.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">🔄</div>
+          <h3>Seamless Sync Across Devices</h3>
+          <p>Real-time sync across desktop, tablet, and mobile. Pick up exactly where you left off.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ╔══════════════════════════════╗ -->
+  <!-- ║  SECURITY SECTION           ║ -->
+  <!-- ╚══════════════════════════════╝ -->
+  <section id="security">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-label">▸ Security</p>
+        <h2>Security You Can Trust</h2>
+        <p style="color:rgba(255,255,255,.55)">Enterprise-grade protection built into every layer of SmartMailX.</p>
+      </div>
+      <div class="security-grid">
+        <div class="security-card reveal">
+          <div class="sec-icon">🤖</div>
+          <h3>AI Phishing Detection</h3>
+          <p>Machine learning models identify phishing attempts before they reach your inbox.</p>
+        </div>
+        <div class="security-card reveal">
+          <div class="sec-icon">🚨</div>
+          <h3>Real-Time Alerts &amp; Blocking</h3>
+          <p>Instant notifications and automatic blocking when threats are detected.</p>
+        </div>
+        <div class="security-card reveal">
+          <div class="sec-icon">🧠</div>
+          <h3>Behavioral Threat Detection</h3>
+          <p>Adapts to novel attack patterns by modeling sender and content behavior over time.</p>
+        </div>
+        <div class="security-card reveal">
+          <div class="sec-icon">🔗</div>
+          <h3>Malicious Link Protection</h3>
+          <p>Every link is scanned in real-time. Dangerous URLs are neutralized before you click.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ╔══════════════════════════════╗ -->
+  <!-- ║  CALL TO ACTION             ║ -->
+  <!-- ╚══════════════════════════════╝ -->
+  <section id="cta">
+    <div class="container">
+      <div class="cta-box reveal">
+        <h2>Ready for a Smarter<br>Email Experience?</h2>
+        <p>Join thousands who've already left inbox chaos behind.</p>
+        <a href="#" class="btn-primary">✉ Get Started with SmartMailX</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ╔══════════════════════════════╗ -->
+  <!-- ║  FOOTER                     ║ -->
+  <!-- ╚══════════════════════════════╝ -->
+  <footer>
+    <p>© 2026 <span>SmartMailX</span> — Built for the future of email.</p>
+  </footer>
+
+  <!-- ─── JavaScript ─────────────────────────────────────────── -->
+  <script>
+    // Sticky nav shadow on scroll
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 20);
+    });
+
+    // Mobile hamburger toggle
+    const hamburger = document.getElementById('hamburger');
+    const navLinks  = document.getElementById('navLinks');
+    hamburger.addEventListener('click', () => {
+      navLinks.classList.toggle('open');
+    });
+    // Close menu on link click (mobile)
+    navLinks.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => navLinks.classList.remove('open'));
+    });
+
+    // Scroll reveal animation using IntersectionObserver
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          // Stagger cards in a grid
+          const delay = entry.target.closest('.problems-grid, .features-grid, .security-grid')
+            ? Array.from(entry.target.parentElement.children).indexOf(entry.target) * 80
+            : 0;
+          setTimeout(() => entry.target.classList.add('visible'), delay);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    reveals.forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>
